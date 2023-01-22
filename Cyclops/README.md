@@ -9,4 +9,5 @@ LL1 parser written in Python
 * First and Follow Sets
 * Build Parsing Table
 * Take String and check whether the string is accepted or rejected by the grammar
-cyclops.pdf
+
+ [embed]cyclops.pdf[/embed]
