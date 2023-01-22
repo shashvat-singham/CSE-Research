@@ -1,0 +1,10 @@
+{
+    "data":[
+    {
+        "Filename" : "input_specs2_PT_2_B.py",
+            "Grammar" : ["E -> T X", "T -> ( E )", "T -> int Y", "X -> + E", "X -> eps", "Y -> * T", "Y -> eps"],
+            "ParseTable" : [{"$": 7, "int": 0, "(": 0, "+": 7, "*": 6, ")": 7, "non_term": "Y"}, {"$": 0, "int": 0, "(": 0, "+": 0, "*": 0, ")": 0, "non_term": "X"}, {"$": 0, "int": 1, "(": 1, "+": 0, "*": 0, ")": 0, "non_term": "E"}, {"$": 0, "int": 3, "(": 2, "+": 0, "*": 0, ")": 0, "non_term": "T"}],
+            "Feedback" : ["First Set (constraint 1 for Term +)", "Parse table (constraint 1 for Non-term X)", "Parse table (constraint 2 for Non-term Y)"]
+    }
+]
+}

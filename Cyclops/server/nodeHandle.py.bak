@@ -1,0 +1,119 @@
+import sys
+import json
+
+
+gt2pt = {2: {1: u"input_specs2_PT_2_B.py", 2: u"input_specs2_PT_1_B.py", 3: u"input_specs2_First_2_A.py", 4: u"input_specs2_PT_1_A.py", 5: u"input_specs2_First_2_B.py"}, 4: {1: u"input_specs4_PT_2_B.py", 2: u"input_specs4_PT_2_A.py", 3: u"input_specs4_First_2_A.py", 4: u"input_specs4_PT_1_A.py", 5: u"input_specs4_PT_1_B.py", 6: u"input_specs4_First_2_B.py"}, 5: {1: u"input_specs5_PT_2_R.py", 2: u"input_specs5_PT_2_T.py", 3: u"input_specs5_PT_1_T.py", 4: u"input_specs5_First_3_R.py", 5: u"input_specs5_First_2_R.py", 6: u"input_specs5_Follow_2_T.py", 7: u"input_specs5_PT_1_R.py"}, 6: {1: u"input_specs6_Follow_2_A.py", 2: u"input_specs6_PT_1_B.py", 3: u"input_specs6_First_2_A.py", 4: u"input_specs6_First_2_B.py", 5: u"input_specs6_PT_1_A.py", 6: u"input_specs6_PT_2_B.py"}, 8: {1: u"input_specs8_PT_1_Q.py", 2: u"input_specs8_PT_2_Q.py", 3: u"input_specs8_PT_1_F.py", 4: u"input_specs8_First_2_F.py", 5: u"input_specs8_First_2_Q.py", 6: u"input_specs8_PT_2_F.py"}, 9: {1: u"input_specs9_First_2_A.py", 2: u"input_specs9_PT_1_A.py"}, 10: {1: u"input_specs10_PT_1_A.py", 2: u"input_specs10_PT_2_A.py", 3: u"input_specs10_PT_1_B.py", 4: u"input_specs10_First_2_B.py", 5: u"input_specs10_First_2_A.py"}, 11: {1: u"input_specs11_PT_2_X.py", 2: u"input_specs11_First_2_Y.py", 3: u"input_specs11_PT_1_X.py", 4: u"input_specs11_PT_1_Y.py", 5: u"input_specs11_PT_2_Y.py", 6: u"input_specs11_First_2_X.py"}, 14: {1: u"input_specs14_PT_1_B.py", 2: u"input_specs14_PT_1_A.py", 3: u"input_specs14_First_3_A.py", 4: u"input_specs14_First_2_B.py", 5: u"input_specs14_PT_2_B.py", 6: u"input_specs14_First_2_A.py", 7: u"input_specs14_PT_2_A.py"}, 15: {1: u"input_specs15_PT_2_T.py", 2: u"input_specs15_First_2_T.py", 3: u"input_specs15_PT_1_T.py"}, 20: {1: u"input_specs20_PT_1_B.py", 2: u"input_specs20_PT_1_A.py", 3: u"input_specs20_First_3_A.py", 4: u"input_specs20_First_2_B.py", 5: u"input_specs20_PT_2_B.py", 6: u"input_specs20_First_2_A.py", 7: u"input_specs20_PT_2_A.py"}}
+
+
+grammar = sys.argv[1]
+task = sys.argv[2]
+
+
+def getNullProd(G):
+    nullSet = []
+    for i in G:
+        if i[-1] == 'eps':
+            nullSet.append(i[0])
+    return nullSet
+
+def cleanUp(G, nullSet):
+    newG = []
+    for prod in G:
+        ts = set(prod[1:])
+        if 'eps' in ts and len(ts) == 1:
+            newG.append([prod[0], 'eps'])
+        else:
+            temp = list(prod)
+            try:
+                while True:
+                    temp.remove('eps')
+            except ValueError:
+                pass
+            newG.append(temp)
+    return newG
+
+
+# require a grammar after applying cleanUp()
+def convertG2Str(G):
+    gStr = []
+    for prod in G:
+        ts = prod[1:]
+        gStr.append(prod[0] + " -> " + ' '.join([ele for ele in ts]))
+    return gStr
+
+#G = [ "S -> a A B b", "A -> a A c", "A -> eps", "B -> b B", "B -> c"]
+
+
+'''
+G = [['S','a','A','B','b'],['A','eps','a','A','c'],['A','eps','eps','eps','eps'],['B','eps','eps','b','B'],['B','eps','eps','eps','c']]
+
+pt = [{'non_term' : 'A',"a" : 0,"c" : 3,"b" : 3,"$" : 0},{'non_term' : 'S',"a" : 1,"c" : 0,"b" : 0,"$" : 0},{'non_term' : 'B',"a" : 0,"c" : 5,"b" : 4,"$" : 0}]
+
+response = {
+    "Grammar": convertG2Str(cleanUp(G, getNullProd(G))),
+    "ParseTable": pt,
+    "Feedback": ["First_1: 20", "First_3: 30"]
+}
+'''
+
+def getBetterPt(pt, G):
+
+    newPt = list(pt)
+    for row in range(len(newPt)):
+        for k, v in newPt[row].items():
+            if k == "non_term":
+                continue
+            elif v == 0:
+                newPt[row][k] = ""
+            else:
+                newPt[row][k]= G[int(newPt[row][k]) - 1]
+    return newPt
+
+
+def cleanerFeedback(fdbk):
+    nFdbk = []
+    for i in fdbk:
+        if "First_1" in i:
+            nFdbk.append("First Set Rule 1")
+        elif "First_2" in i:
+            nFdbk.append("First Set Rule 2")
+        elif "First_3" in i:
+            nFdbk.append("First Set Rule 3")
+        if "Follow_1" in i:
+            nFdbk.append("Follow Set Rule 1")
+        elif "Follow_2" in i:
+            nFdbk.append("Follow Set Rule 2")
+        elif "Follow_3" in i:
+            nFdbk.append("Follow Set Rule 3")
+        if "PT_1" in i:
+            nFdbk.append("Parse Table Rule 1")
+        if "PT_2" in i:
+            nFdbk.append("Parse Table Rule 2")
+    return nFdbk
+
+f = open("JSONdata.txt")
+data = json.load(f)["data"]
+
+
+def addingEpsHtml(G):
+    for i in range(len(G)):
+        if "eps" in G[i]:
+            # print("&#949;", G[i])
+            G[i] = G[i].replace("eps","<Latex>$\epsilon$</Latex>")
+    return G
+
+response = {}
+for d in data:
+    if d["Filename"] == gt2pt[int(grammar)][int(task)]:
+        pt = d["ParseTable"]
+        G = d["Grammar"]
+
+        newPt = getBetterPt(pt, G)
+        #fdbk = cleanerFeedback(d["Feedback"])
+        fdbk = d["Feedback"]
+
+        response = { "Grammar" : G, "ParseTable" : newPt, "Feedback": fdbk}
+        break
+
+print(json.dumps(response))
+

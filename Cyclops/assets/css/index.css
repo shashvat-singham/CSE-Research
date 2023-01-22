@@ -1,0 +1,94 @@
+@media (min-width: 768px) {
+  .h-md-100 {
+    height: 100vh;
+  }
+}
+.btn-round {
+  border-radius: 30px;
+}
+.bg-indigo {
+  background: indigo;
+}
+.text-cyan {
+  color: #35bdff;
+}
+.pt-3-half {
+  padding-top: 1.4rem;
+}
+.my-custom-scrollbar {
+  position: relative;
+  height: 200px;
+  overflow: auto;
+}
+.table-wrapper-scroll-y {
+  display: block;
+}
+table {
+  height: 400px;
+}
+
+#table2 {
+  height: 400px;
+}
+
+#pageloader {
+  z-index: 1000;
+  background-color: rgb(0, 0, 0, 0.75);
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+h1 {
+  font-family: "Open Sans", sans-serif;
+  font-size: 35px;
+}
+h2,
+h3,
+button {
+  font-family: "Montserrat", sans-serif;
+}
+
+.left-half {
+  background-color: azure !important;
+  padding: 20px !important;
+}
+
+.textarea-input {
+  padding: 25px !important;
+  margin: auto !important;
+  border-radius: 5px;
+}
+
+textarea {
+  background-color: antiquewhite !important;
+}
+
+
+.sol-headers{
+  margin: 20px auto 20px auto;
+  color: whitesmoke;
+  text-decoration: underline;
+}
+
+.feedback-submit{
+  font-size: 0.7rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sol-body
+{
+  font-size: 0.65rem;
+  font-family: "Open Sans", sans-serif;
+  padding: 0.5rem;
+}
+
+.sol-card-h2{
+  border-radius:3px;
+}
+
+.sol-card-btn{
+  color:white;
+  font-size: 0.75rem;
+}

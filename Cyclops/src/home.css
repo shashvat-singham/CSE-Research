@@ -1,0 +1,162 @@
+* {
+    margin: 0px;
+    padding: 0;
+    font-family: sans-serif;
+    /* font: Graphik; */
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container1 {
+    min-height: 85vh;
+    color: white;
+    background: #2a2a2c;
+}
+
+.logo {
+    font-size: 2em;
+}
+
+.nav-bar {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btns {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn {
+    font-size: 1.2em;
+    margin: 0 1.5rem;
+}
+
+.blinks {
+    margin-left: 5rem;
+}
+
+.btn-link {
+    font-size: 1.2em;
+    background-color: red;
+    padding: 5px 10px;
+    margin-right: 10px;
+}
+
+.subCont {
+    width: 75%;
+    margin-left: 13rem;
+    margin-top: 6rem;
+    font-size: 1.5em;
+}
+
+.headline {
+    font-size: 1.0em;
+    margin-bottom: 10px;
+}
+
+.desc{
+    margin-bottom: 10px;
+}
+
+.points {
+    margin-bottom: 18px;
+}
+
+.team {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: black;
+    font-size: 1.2em;
+    margin: 5rem 0;
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    margin: 0 20px;
+    line-height: 25px;
+}
+
+.user-comment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid black;
+    border-radius: 18px;
+    margin-top: 15px;
+    padding: 15px 20px;
+}
+
+
+.fa-user {
+    font-size: 2em;
+}
+
+.why-di {
+    min-height: 100vh;
+    color: white;
+    background: #2a2a2c;
+    font-size: 1.2em;
+    flex-direction: column;
+}
+
+.path {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.checkpoint-odd {
+    display: flex;
+    width: 50%;
+    align-self: flex-start;
+    margin: 15px 6px;
+}
+
+.checkpoint-even p {
+    margin: 0 5px;
+}
+
+.checkpoint-even {
+    display: flex;
+    width: 50%;
+    align-self: end;
+    margin: 15px 10px;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: teal;
+    color: white;
+}
+
+.flinks {
+    margin: 10px 0;
+}
+
+.flinks a{
+    text-decoration: underline;
+    margin: 0 10px;
+    font-size: 1.2 em;
+}
+
+.flinks p {
+    display: inline;
+}
+
+   

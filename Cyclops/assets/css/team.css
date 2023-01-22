@@ -1,0 +1,73 @@
+.column-1 {
+  float: left;
+  width: 30%;
+  margin: 3% 35% 3% 35%;
+  padding: 0 8px;
+}
+.column-3 {
+  float: left;
+  width: 30%;
+  margin: 3% auto 3% auto;
+  padding: 0 8px;
+}
+
+/* Display the columns below each other instead of side by side on small screens */
+@media screen and (max-width: 650px) {
+  .column {
+    width: 100%;
+    display: block;
+  }
+}
+
+/* Add some shadows to create a card effect */
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Some left and right padding inside the container */
+.container {
+  padding: 0 16px;
+}
+
+/* Clear floats */
+.container::after,
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.title {
+  color: grey;
+}
+
+.button {
+  border: none;
+  outline: 0;
+  display: inline-block;
+  padding: 8px;
+  color: white;
+  background-color: #000;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+}
+
+.button:hover {
+  background-color: #555;
+}
+
+#team-header {
+  text-align: center;
+  margin: 20px;
+}
+
+.khyathi{
+    height: 250px;
+    width: 200px;
+}
+
+h1 {
+  font-family: "Open Sans", sans-serif;
+  font-size: 35px;
+}
