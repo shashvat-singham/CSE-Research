@@ -31,17 +31,35 @@ pytest
 
 ## Pages
 
-| Page | Needs |
-|---|---|
-| Overview | bundled result CSVs |
-| Results Explorer | bundled result CSVs |
-| Expert Analysis | bundled result CSVs |
-| Solver Output | `NNRepair/Z3Solutions` (14 MB, local checkout) |
-| Run Inference | `NNRepair/NN-Code` weights and datasets (954 MB, local checkout) |
+Navigation is declared in `streamlit_app.py` via `st.navigation`; the pages
+themselves live in `views/`. Auto-discovery from a `pages/` directory would
+name the first sidebar entry after the entry-point filename, which is why it
+is not used.
 
-The result CSVs are copied into `data/Results` so the hosted app is
-self-contained. The last two pages detect their artifacts and explain the
-absence rather than failing.
+| Page | Reads |
+|---|---|
+| NNRepair (overview) | result CSVs |
+| Results Explorer | result CSVs |
+| Expert Analysis | result CSVs and `_prec_f1` sidecars |
+| Solver Output | Z3 solution files |
+| Run Inference | network weights and an input dataset |
+
+### What the deployment bundles
+
+Everything needed for all five pages ships in `data/`, 26 MB total:
+
+| | Size | Notes |
+|---|---|---|
+| `data/Results` | 1.5 MB | all 345 result CSVs |
+| `data/NNRepair/Z3Solutions` | 14 MB | all 290 solution files, all five subjects |
+| `data/NNRepair/NN-Code/mnist0-adv/params` | 1.6 MB | MNIST0 adversarial weights |
+| `data/NNRepair/NN-Code/mnist0-adv/data` | 9 MB | first 1,000 inputs of the FGSM ε=0.05 test set |
+
+What is left out is the bulk input data — five FGSM test sets and five
+validation sets at 90 MB each, plus the CIFAR weights. `app_data.py` prefers a
+full checkout when one is present and falls back to this subset otherwise,
+and the app says which it is running on rather than letting a visitor assume
+the missing subjects do not exist.
 
 ## The Python port
 

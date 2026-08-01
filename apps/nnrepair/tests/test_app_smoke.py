@@ -15,11 +15,15 @@ streamlit_testing = pytest.importorskip("streamlit.testing.v1")
 AppTest = streamlit_testing.AppTest
 
 APP_ROOT = Path(__file__).resolve().parents[1]
-PAGES = [APP_ROOT / "streamlit_app.py", *sorted((APP_ROOT / "pages").glob("*.py"))]
 
-# Pages needing artifacts excluded from the hosted bundle render an
-# explanatory notice instead of charts; both outcomes are a pass.
-OPTIONAL_ARTIFACT_PAGES = {"3_Solver_Output.py", "4_Run_Inference.py"}
+#: The navigation entry plus each view run standalone. Views are exercised
+#: directly rather than only through st.navigation, so a failure points at the
+#: page rather than at the router.
+PAGES = [APP_ROOT / "streamlit_app.py", *sorted((APP_ROOT / "views").glob("*.py"))]
+
+# Views needing artifacts that may be absent render an explanatory notice
+# instead of charts; both outcomes are a pass.
+OPTIONAL_ARTIFACT_PAGES = {"solver_output.py", "run_inference.py"}
 
 
 def run(page: Path, timeout: int = 240):
@@ -54,7 +58,7 @@ def test_landing_page_charts_the_selected_subject():
 
 
 def test_results_explorer_filters_narrow_the_data():
-    page = APP_ROOT / "pages" / "1_Results_Explorer.py"
+    page = APP_ROOT / "views" / "results_explorer.py"
     app = run(page)
 
     layer = next((s for s in app.selectbox if s.label == "Repaired layer"), None)
@@ -71,7 +75,7 @@ def test_results_explorer_filters_narrow_the_data():
 
 
 def test_expert_analysis_reports_a_verdict():
-    app = run(APP_ROOT / "pages" / "2_Expert_Analysis.py")
+    app = run(APP_ROOT / "views" / "expert_analysis.py")
     text = " ".join(m.value for m in app.markdown)
     assert "experts improve on the original" in text or app.info
 

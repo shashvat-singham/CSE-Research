@@ -7,11 +7,10 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from app_data import Z3_ROOT, have_z3_solutions, missing_artifact_note
+from app_data import Z3_ROOT, bundled_subset_note, have_z3_solutions, missing_artifact_note
 from nnrepair.z3_solutions import parse_z3_model
 from theme import INK, SERIES, bar_with_labels
 
-st.set_page_config(page_title="Solver Output — NNRepair", page_icon="🧮", layout="wide")
 
 st.title("Solver Output")
 st.caption(
@@ -22,6 +21,8 @@ st.caption(
 if not have_z3_solutions():
     missing_artifact_note("Z3 solutions", Z3_ROOT)
     st.stop()
+
+bundled_subset_note()
 
 
 @st.cache_data(show_spinner=False)

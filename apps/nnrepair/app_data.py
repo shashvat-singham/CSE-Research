@@ -20,6 +20,11 @@ APP_ROOT = Path(__file__).resolve().parent
 #: Result CSVs, bundled with the app.
 RESULTS_ROOT = APP_ROOT / "data" / "Results"
 
+#: Trimmed artifact subset shipped with the deployed app — the Z3 solutions in
+#: full, plus the MNIST0 weights and a slice of one FGSM test set. Enough for
+#: every page to work; the remaining ~940 MB of datasets stays out.
+BUNDLED_ARTIFACT_ROOT = APP_ROOT / "data" / "NNRepair"
+
 
 def _looks_like_artifact_tree(path: Path) -> bool:
     """Whether ``path`` is really the artifact tree and not a lookalike.
@@ -56,15 +61,18 @@ def _locate_artifact_root() -> Path:
     if override:
         return Path(override)
 
-    default = (
+    monorepo = (
         APP_ROOT.parents[1] / "NNRepair" if len(APP_ROOT.parents) > 1 else APP_ROOT / "NNRepair"
     )
 
-    for candidate in (default, APP_ROOT / "NNRepair"):
+    # The full checkout wins when present — it has every subject and the
+    # complete datasets. The bundled copy under data/ is the trimmed subset
+    # shipped with the deployed app.
+    for candidate in (monorepo, BUNDLED_ARTIFACT_ROOT, APP_ROOT / "NNRepair"):
         if _looks_like_artifact_tree(candidate):
             return candidate
 
-    return default
+    return monorepo
 
 
 #: Optional artifacts, present only in a full checkout or a Docker mount.
@@ -133,6 +141,31 @@ def have_z3_solutions() -> bool:
 def have_weights() -> bool:
     """Whether any extracted weight dump is present."""
     return NN_CODE_ROOT.is_dir() and any(NN_CODE_ROOT.glob("*/params/weights0.txt"))
+
+
+def using_bundled_subset() -> bool:
+    """Whether the artifacts in use are the trimmed copy shipped with the app.
+
+    True on the hosted deployment, false in a full checkout. Pages use this to
+    say plainly that they are showing a subset rather than letting a visitor
+    assume the missing subjects and inputs simply do not exist.
+    """
+    try:
+        return ARTIFACT_ROOT.resolve() == BUNDLED_ARTIFACT_ROOT.resolve()
+    except OSError:
+        return False
+
+
+def bundled_subset_note() -> None:
+    """State what the shipped subset contains, when running on it."""
+    if not using_bundled_subset():
+        return
+    st.caption(
+        "Running on the artifact subset bundled with this deployment: all 290 "
+        "Z3 solutions, the MNIST0 adversarial weights, and the first 1,000 "
+        "inputs of the FGSM ε=0.05 test set. The remaining ~940 MB of datasets "
+        "and the CIFAR weights are not hosted — clone the repository for those."
+    )
 
 
 def missing_artifact_note(what: str, path: Path) -> None:

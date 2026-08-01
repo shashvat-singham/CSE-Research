@@ -9,7 +9,6 @@ import streamlit as st
 from app_data import SUBJECT_BLURBS, results_index, selection_label
 from theme import INK, SEQUENTIAL, bar_with_labels, categorical_scale
 
-st.set_page_config(page_title="Results Explorer — NNRepair", page_icon="📊", layout="wide")
 
 st.title("Results Explorer")
 st.caption(

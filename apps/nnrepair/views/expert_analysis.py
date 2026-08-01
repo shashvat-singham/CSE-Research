@@ -11,7 +11,6 @@ from nnrepair.f1_selection import read_prec_f1, select_experts_by_harmonic_f1
 from nnrepair.results import discover_results
 from theme import INK, SERIES, bar_with_labels
 
-st.set_page_config(page_title="Expert Analysis — NNRepair", page_icon="🎯", layout="wide")
 
 st.title("Expert Analysis")
 st.caption(
