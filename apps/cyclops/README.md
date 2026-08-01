@@ -4,7 +4,7 @@ An LL(1) parser workbench. Enter a grammar, get FIRST sets, FOLLOW sets and the
 parse table — then fill the table in yourself and have it checked cell by cell,
 with the governing rule named for every mistake.
 
-**Live: https://cyclops-delta.vercel.app**
+**Live → [cyclops-delta.vercel.app](https://cyclops-delta.vercel.app/)**
 
 ## Running it
 

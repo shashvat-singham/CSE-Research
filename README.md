@@ -3,14 +3,28 @@
 Two research artifacts from the compilers and program-analysis group at IIT
 Kanpur, each with a deployed application built on top of it.
 
-| | What it is | Live | Stack |
-|---|---|---|---|
-| **[Cyclops](apps/cyclops)** | LL(1) grammar analysis and parse-table workbench | **https://cyclops-delta.vercel.app** | Next.js on Vercel |
-| **[NNRepair](apps/nnrepair)** | Constraint-based repair of NN classifiers | **https://nnrepair.streamlit.app** | Streamlit Community Cloud |
+## Live applications
 
-NNRepair deploys from **[shashvat-singham/nnrepair-app](https://github.com/shashvat-singham/nnrepair-app)**,
-a split-out copy of `apps/nnrepair`, so the build does not clone the 954 MB of
-research data this repository carries.
+### → [cyclops-delta.vercel.app](https://cyclops-delta.vercel.app/)
+
+**[Cyclops](apps/cyclops)** — LL(1) grammar analysis and parse-table workbench.
+Enter a grammar, get FIRST sets, FOLLOW sets and the parse table, then fill the
+table in yourself and have it graded cell by cell with the governing rule named
+for every mistake. Next.js on Vercel.
+
+### → [nnrepair.streamlit.app](https://nnrepair.streamlit.app/)
+
+**[NNRepair](apps/nnrepair)** — constraint-based repair of neural network
+classifiers. Browse the 345 published result files, decode the Z3 solutions
+into weight deltas, and re-run the repaired networks over the complete
+datasets. Streamlit Community Cloud.
+
+NNRepair deploys from
+**[shashvat-singham/nnrepair-app](https://github.com/shashvat-singham/nnrepair-app)**,
+a split-out copy of `apps/nnrepair`. That keeps the build off this
+repository's ~1 GB of raw research data while still shipping every artifact
+the app needs — the input datasets travel losslessly compressed, 941 MB down
+to 29 MB.
 
 ## Layout
 
