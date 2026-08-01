@@ -32,6 +32,9 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // The Docker build sets this to emit a self-contained server bundle. Vercel
+  // does its own tracing, so leaving it off there avoids duplicated output.
+  output: process.env.BUILD_STANDALONE === "1" ? "standalone" : undefined,
   images: {
     // No remote images and no next/image usage; skip the optimizer entirely.
     unoptimized: true,

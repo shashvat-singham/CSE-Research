@@ -2,7 +2,7 @@
   "name": "cyclops",
   "version": "1.0.0",
   "private": true,
-  "description": "Cyclops - an LL(1) parser workbench for teaching compiler construction",
+  "description": "Cyclops - LL(1) grammar analysis and parse-table workbench",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

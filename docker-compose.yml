@@ -1,0 +1,66 @@
+# Runs both apps together.
+#
+#   docker compose up --build
+#
+#   Cyclops   http://localhost:3000
+#   NNRepair  http://localhost:8501
+#
+# Each service builds from its own directory, so the build contexts stay small
+# and neither app sees the other's source.
+
+services:
+  cyclops:
+    build:
+      context: ./apps/cyclops
+      dockerfile: Dockerfile
+    image: cyclops:local
+    container_name: cyclops
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    # The app writes nothing and needs no privileges.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fsS -X POST http://127.0.0.1:3000/api/analyze
+          -H 'Content-Type: application/json'
+          -d '{"grammar":"S -> a"}' > /dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  nnrepair:
+    build:
+      context: ./apps/nnrepair
+      dockerfile: Dockerfile
+    image: nnrepair:local
+    container_name: nnrepair
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    # The Solver Output and Run Inference pages read artifacts that are far too
+    # large to bake into an image. Mounting them read-only lights those pages
+    # up locally; without the mount they explain their own absence.
+    volumes:
+      - ./NNRepair/Z3Solutions:/repo/NNRepair/Z3Solutions:ro
+      - ./NNRepair/NN-Code:/repo/NNRepair/NN-Code:ro
+    environment:
+      # Tells app_data.py where the optional artifacts are mounted.
+      NNREPAIR_ARTIFACT_ROOT: /repo/NNRepair
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8501/_stcore/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

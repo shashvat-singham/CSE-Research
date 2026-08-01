@@ -33,19 +33,20 @@ export default function HomePage() {
     <div className="space-y-12">
       <section className="pt-4">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Learn LL(1) parsing by building the table yourself
+          LL(1) grammar analysis, worked out in full
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-ink-secondary">
           Cyclops computes FIRST sets, FOLLOW sets and the LL(1) parse table for
-          any grammar you give it — then hands the table back empty so you can
-          fill it in and find out exactly which rule you got wrong.
+          any grammar you give it, names every conflict that stops a grammar
+          being LL(1) — and will hand the table back empty so you can fill it in
+          and have it checked cell by cell.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/workbench" className="btn-primary">
             Open the workbench
           </Link>
-          <Link href="/learn" className="btn-secondary">
-            Read the method
+          <Link href="/reference" className="btn-secondary">
+            The rules
           </Link>
         </div>
       </section>

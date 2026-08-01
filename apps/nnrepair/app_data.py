@@ -7,6 +7,7 @@ availability first and explain what is missing rather than raising.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -15,13 +16,45 @@ import streamlit as st
 from nnrepair.results import discover_results, load_results_index
 
 APP_ROOT = Path(__file__).resolve().parent
-REPO_ROOT = APP_ROOT.parents[1]
 
 #: Result CSVs, bundled with the app.
 RESULTS_ROOT = APP_ROOT / "data" / "Results"
 
-#: Optional artifacts, present only in a full checkout.
-ARTIFACT_ROOT = REPO_ROOT / "NNRepair"
+
+def _locate_artifact_root() -> Path:
+    """Find the optional ``NNRepair`` artifact tree.
+
+    Three deployments, three layouts:
+
+    * **Docker** — the artifacts are bind-mounted, and
+      ``NNREPAIR_ARTIFACT_ROOT`` says where.
+    * **Monorepo checkout** — the app lives at ``apps/nnrepair``, so the
+      artifacts are two levels up.
+    * **Standalone repo** — the app is the repository root and the artifacts
+      are simply absent.
+
+    Returns:
+        The first candidate that exists, or the monorepo path as a
+        non-existent default so callers still get a sensible name to report.
+    """
+    override = os.environ.get("NNREPAIR_ARTIFACT_ROOT")
+    if override:
+        return Path(override)
+
+    candidates = [
+        APP_ROOT.parents[1] / "NNRepair" if len(APP_ROOT.parents) > 1 else None,
+        APP_ROOT / "NNRepair",
+    ]
+    for candidate in candidates:
+        if candidate is not None and candidate.is_dir():
+            return candidate
+
+    return APP_ROOT.parents[1] / "NNRepair" if len(APP_ROOT.parents) > 1 else APP_ROOT / "NNRepair"
+
+
+#: Optional artifacts, present only in a full checkout or a Docker mount.
+ARTIFACT_ROOT = _locate_artifact_root()
+REPO_ROOT = ARTIFACT_ROOT.parent
 Z3_ROOT = ARTIFACT_ROOT / "Z3Solutions"
 CONSTRAINTS_ROOT = ARTIFACT_ROOT / "Constraints"
 NN_CODE_ROOT = ARTIFACT_ROOT / "NN-Code"

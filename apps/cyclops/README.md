@@ -15,9 +15,26 @@ npm run dev        # http://localhost:3000
 
 ```bash
 npm test           # engine tests
+npm run lint
 npm run typecheck
 npm run build
 ```
+
+### Docker
+
+```bash
+docker build -t cyclops .
+docker run --rm -p 3000:3000 cyclops
+```
+
+Three stages: dependencies from the lockfile alone (so a source-only change
+reuses the layer), the build, then a runtime image holding just Next's
+standalone output. It runs as the unprivileged `node` user, and the
+healthcheck POSTs a grammar to `/api/analyze` — a passing check means the LL(1)
+engine is actually answering, not merely that a port is open.
+
+`output: "standalone"` is switched on by `BUILD_STANDALONE=1`, which the
+Dockerfile sets. Vercel does its own tracing, so the flag stays off there.
 
 ## Layout
 

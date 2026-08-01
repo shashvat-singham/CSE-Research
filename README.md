@@ -5,7 +5,7 @@ Kanpur, each with a deployed application built on top of it.
 
 | | What it is | App | Host |
 |---|---|---|---|
-| **[Cyclops](apps/cyclops)** | LL(1) parser teaching tool | Next.js | Vercel |
+| **[Cyclops](apps/cyclops)** | LL(1) grammar analysis and parse-table workbench | Next.js | Vercel |
 | **[NNRepair](apps/nnrepair)** | Constraint-based repair of NN classifiers | Streamlit | Streamlit Community Cloud |
 
 ## Layout
@@ -33,6 +33,39 @@ might want to actually run. That is Streamlit's core competence, and it
 tolerates compute and data sizes that Vercel's serverless limits do not.
 
 ## Getting started
+
+### Docker
+
+Both apps together:
+
+```bash
+docker compose up --build
+```
+
+| | URL |
+|---|---|
+| Cyclops | http://localhost:3000 |
+| NNRepair | http://localhost:8501 |
+
+Or one at a time:
+
+```bash
+docker build -t cyclops ./apps/cyclops   && docker run --rm -p 3000:3000 cyclops
+docker build -t nnrepair ./apps/nnrepair && docker run --rm -p 8501:8501 nnrepair
+```
+
+Both images are multi-stage, run as a non-root user, and carry a healthcheck
+that exercises the app rather than just the port. Cyclops builds Next's
+standalone output, so the runtime image holds only the modules actually
+imported; NNRepair installs into a virtualenv in the builder stage and copies
+it forward, leaving no compilers or pip cache behind.
+
+Compose bind-mounts `NNRepair/Z3Solutions` and `NNRepair/NN-Code` read-only,
+which lights up the two NNRepair pages that need them. They are far too large
+to bake into an image, so `docker run` without the mounts gets an app that
+explains their absence instead.
+
+### Without Docker
 
 ```bash
 # Cyclops

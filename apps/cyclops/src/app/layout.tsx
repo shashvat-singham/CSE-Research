@@ -42,8 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <footer className="mt-16 border-t border-line">
           <div className="mx-auto w-full max-w-6xl px-4 py-6 text-sm text-ink-muted sm:px-6 lg:px-8">
-            Cyclops — a teaching tool for LL(1) parsing, from the compilers group
-            at IIT Kanpur.
+            Cyclops — from the compilers and program-analysis group at IIT Kanpur.
           </div>
         </footer>
       </body>
