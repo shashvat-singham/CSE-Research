@@ -21,6 +21,7 @@ from typing import Literal
 import numpy as np
 
 from .combination import CombinationMethod, combine_experts, select_label_with_max_confidence
+from .datasets import iter_inputs, resolve_dataset
 from .metrics import ConfusionCounts, OriginalConfusionCounts, PassFailCounts, round_half_up
 from .models.cifar10 import CIFAR10InternalData, CIFAR10Network
 from .models.mnist0 import MNIST0InternalData, MNIST0Network
@@ -186,13 +187,14 @@ def read_inputs(
     needs_normalization: bool,
     limit: int | None = None,
 ) -> Iterator[np.ndarray]:
-    """Stream input images from a CSV of flattened pixels.
+    """Stream input images, from either the CSV text or its compressed form.
 
-    These files reach 94 MB, so they are read line by line rather than loaded
-    whole — the Java did the same, and it keeps the Streamlit app's memory flat.
+    Delegates to :func:`nnrepair.datasets.iter_inputs`, which prefers a
+    codebook ``.npz`` sibling when one exists. See that module for why the
+    compressed form is exact rather than lossy.
 
     Args:
-        path: CSV file, one flattened image per line.
+        path: Dataset path, normally the ``.txt``.
         shape: Target ``(H, W, C)``.
         needs_normalization: Divide by 255.
         limit: Stop after this many images.
@@ -201,24 +203,9 @@ def read_inputs(
         Arrays of the requested shape.
 
     Raises:
-        ValueError: If a line's pixel count does not match ``shape``.
+        ValueError: If a row's pixel count does not match ``shape``.
     """
-    expected = int(np.prod(shape))
-    with Path(path).open("r", encoding="utf-8", errors="replace") as handle:
-        for index, line in enumerate(handle):
-            if limit is not None and index >= limit:
-                return
-            line = line.strip()
-            if not line:
-                continue
-            values = np.fromstring(line, sep=",", dtype=np.float64)
-            if values.size != expected:
-                raise ValueError(
-                    f"{path}: line {index + 1} has {values.size} values, expected {expected}"
-                )
-            if needs_normalization:
-                values = values / 255.0
-            yield values.reshape(shape)
+    return iter_inputs(path, shape, needs_normalization, limit)
 
 
 def _build_model(subject: Subject, expert_ids: Sequence[int], number_of_experts: int):

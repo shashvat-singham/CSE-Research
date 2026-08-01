@@ -6,14 +6,16 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+import styles
+
 from app_data import SUBJECT_BLURBS, results_index, selection_label
 from theme import INK, SEQUENTIAL, bar_with_labels, categorical_scale
 
 
-st.title("Results Explorer")
-st.caption(
-    "Every published run, filterable. Each run is one repaired model evaluated "
-    "on one dataset; rows are the combination strategies and the individual experts."
+styles.page_header(
+    'Results',
+    'Every published run, filterable. Each run is one repaired model evaluated on one dataset; rows are the combination strategies and the individual experts.',
+    eyebrow='Analysis',
 )
 
 index = results_index()

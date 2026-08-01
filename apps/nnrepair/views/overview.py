@@ -18,14 +18,15 @@ from app_data import (
     results_index,
     using_bundled_subset,
 )
+import styles
 from theme import INK, bar_with_labels
 
-
-st.title("NNRepair")
-st.markdown(
-    "**Constraint-based repair of neural network classifiers.** "
-    "An interactive companion to the artifact: browse the published results, "
-    "inspect the constraint solutions, and re-run the repaired networks."
+styles.page_header(
+    "NNRepair",
+    "Constraint-based repair of neural network classifiers. Browse the published "
+    "results, decode the constraint solutions, and re-run the repaired networks "
+    "against the full datasets.",
+    eyebrow="Artifact companion",
 )
 
 index = results_index()
@@ -42,11 +43,18 @@ if index.empty:
 
 combination_rows = index[index["ROW_KIND"] == "combination"]
 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Subjects", index["subject"].nunique())
-col2.metric("Result files", int((files["kind"] == "result").sum()))
-col3.metric("Experiment runs", len(combination_rows.groupby(["subject", "layer", "stem"])))
-col4.metric("Measurements", f"{len(index):,}")
+styles.metric_row(
+    [
+        ("Subjects", str(index["subject"].nunique()), "model x fault kind"),
+        ("Result files", f"{int((files['kind'] == 'result').sum()):,}", "published CSVs"),
+        (
+            "Experiment runs",
+            f"{len(combination_rows.groupby(['subject', 'layer', 'stem'])):,}",
+            "model x dataset",
+        ),
+        ("Measurements", f"{len(index):,}", "rows indexed"),
+    ]
+)
 
 st.divider()
 
@@ -167,13 +175,13 @@ availability = pd.DataFrame(
             "Artifact": "MNIST0 adversarial weights",
             "Size": "1.6 MB",
             "Available": "Yes" if have_weights() else "Clone to enable",
-            "Used by": "Run Inference",
+            "Used by": "Inference",
         },
         {
-            "Artifact": "Full MNIST/CIFAR datasets & CIFAR weights",
-            "Size": "954 MB",
-            "Available": "Full dataset" if not using_bundled_subset() else "1,000-input slice",
-            "Used by": "Run Inference",
+            "Artifact": "FGSM datasets (10 files, 10,000 inputs each)",
+            "Size": "29 MB" if using_bundled_subset() else "941 MB",
+            "Available": "Yes",
+            "Used by": "Inference",
         },
     ]
 )
@@ -181,11 +189,12 @@ st.dataframe(availability, hide_index=True, width='stretch')
 
 if using_bundled_subset():
     st.caption(
-        "Every page works here. The one thing this deployment trims is the raw "
-        "input data: ten of those files are 94 MB each, so Run Inference ships "
-        "with the first 1,000 inputs of the FGSM ε=0.05 test set rather than "
-        "all 10,000, and without the CIFAR weights. Clone the repository for "
-        "the complete set."
+        "Every page runs on complete data. The FGSM datasets ship losslessly "
+        "compressed — 941 MB of CSV text becomes 29 MB, because each file is an "
+        "8-bit image perturbed and clipped, so a few hundred distinct values "
+        "cover all 7.8 million entries. Decoded values are bit-identical to the "
+        "originals. The CIFAR weights are omitted: the artifact ships no CIFAR "
+        "datasets to run them against."
     )
 else:
     st.caption("Running against a full checkout — every artifact is available.")

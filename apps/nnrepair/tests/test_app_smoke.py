@@ -38,9 +38,13 @@ def test_page_renders_without_exception(page):
 
 
 def test_landing_page_shows_headline_metrics():
+    """Figures render through styles.metric_row, not st.metric."""
     app = run(APP_ROOT / "streamlit_app.py")
-    assert len(app.metric) >= 4
-    assert any("NNRepair" in heading.value for heading in app.title)
+    rendered = " ".join(block.value for block in app.markdown)
+
+    assert "NNRepair" in rendered
+    for label in ("Subjects", "Result files", "Experiment runs", "Measurements"):
+        assert label in rendered, f"missing headline figure: {label}"
 
 
 def test_landing_page_charts_the_selected_subject():

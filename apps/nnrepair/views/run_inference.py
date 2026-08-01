@@ -8,11 +8,14 @@ expert over a slice of a dataset, and combine their verdicts.
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+
+import styles
 
 from app_data import (
     NN_CODE_ROOT,
@@ -23,14 +26,15 @@ from app_data import (
     missing_artifact_note,
 )
 from nnrepair.combination import CombinationMethod
+from nnrepair.datasets import load_inputs
 from nnrepair.experiments import Subject, read_inputs, run_experiment
 from theme import INK, SERIES, bar_with_labels
 
 
-st.title("Run Inference")
-st.caption(
-    "Execute the repaired networks with the ported implementation, rather than "
-    "reading numbers someone else computed."
+styles.page_header(
+    'Inference',
+    'Runs the repaired networks with the ported implementation over a full dataset, rather than reading numbers someone else computed.',
+    eyebrow='Execution',
 )
 
 if not have_weights():
@@ -55,19 +59,80 @@ def available_models() -> pd.DataFrame:
             model = "cifar10"
         else:
             continue
-        datasets = sorted(
-            p.name for p in (params.parent / "data").glob("*.txt")
-        ) if (params.parent / "data").is_dir() else []
         rows.append(
             {
                 "name": params.parent.name,
                 "model": model,
                 "params": str(params),
-                "data_dir": str(params.parent / "data"),
-                "datasets": datasets,
+                "root": str(params.parent),
             }
         )
     return pd.DataFrame(rows)
+
+
+@st.cache_data(show_spinner=False)
+def available_datasets(model_root: str) -> pd.DataFrame:
+    """Input datasets under a model directory, each paired with its labels.
+
+    A split's labels live beside its inputs — ``data/`` holds the test set,
+    ``val-data/`` the validation set — and the two must not be crossed. Pairing
+    them here means the page cannot offer a mismatched combination.
+
+    Datasets may be either the original ``.txt`` or the compressed ``.npz``;
+    both are read transparently, so only one entry per dataset is listed even
+    when both forms are on disk.
+    """
+    rows = []
+    for split_dir, split in ((Path(model_root) / "data", "test"),
+                             (Path(model_root) / "val-data", "validation")):
+        if not split_dir.is_dir():
+            continue
+
+        labels = next(
+            (p for p in sorted(split_dir.glob("*.txt")) if "label" in p.name.lower()), None
+        )
+        if labels is None:
+            continue
+
+        seen: set[str] = set()
+        for candidate in sorted(split_dir.iterdir()):
+            if candidate.suffix not in {".txt", ".npz"}:
+                continue
+            if "label" in candidate.name.lower():
+                continue
+            if candidate.stem in seen:
+                continue
+            seen.add(candidate.stem)
+            rows.append(
+                {
+                    "label": f"{split} · {candidate.stem}",
+                    "split": split,
+                    "inputs": str(candidate),
+                    "labels": str(labels),
+                    "compressed": candidate.suffix == ".npz",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+@st.cache_data(show_spinner=False)
+def count_rows(path: str) -> int:
+    """Number of inputs in a dataset, without decoding the whole thing."""
+    file = Path(path)
+    if file.suffix == ".npz":
+        with np.load(file) as archive:
+            return int(archive["codes"].shape[0])
+    with file.open("r", encoding="utf-8", errors="replace") as handle:
+        return sum(1 for line in handle if line.strip())
+
+
+@st.cache_data(show_spinner=False)
+def peek_range(path: str, rows: int = 8) -> tuple[float, float]:
+    """Observed value range over the first few rows, for the 0–255 check."""
+    sample = load_inputs(path, limit=rows)
+    if sample.size == 0:
+        return (0.0, 0.0)
+    return (float(sample.min()), float(sample.max()))
 
 
 @st.cache_data(show_spinner=False)
@@ -83,13 +148,19 @@ def repair_directories() -> pd.DataFrame:
         else:
             continue
         relative = directory.relative_to(Z3_ROOT).parts
+        subject = relative[0]
+        # A solution is only meaningful against the architecture it was solved
+        # for: CIFAR's final layer is 512 wide, MNIST0's is 128, so crossing
+        # them indexes past the end of the tensor.
+        architecture = "cifar10" if subject.lower().startswith("cifar") else "mnist0"
         rows.append(
             {
                 "label": "/".join(relative),
                 "path": str(directory),
                 "kind": kind,
                 "prefix": prefix,
-                "subject": relative[0],
+                "subject": subject,
+                "architecture": architecture,
             }
         )
     return pd.DataFrame(rows)
@@ -110,69 +181,97 @@ config = st.columns(2)
 model_name = config[0].selectbox("Network weights", models["name"].tolist())
 model_row = models[models["name"] == model_name].iloc[0]
 
-repair_label = config[1].selectbox("Repair (Z3 solutions)", repairs["label"].tolist())
-repair_row = repairs[repairs["label"] == repair_label].iloc[0]
-
-if model_row["model"] == "mnist0":
-    layer_options = {"Last layer (dense_2, 128→10)": 8, "Intermediate (dense_1, 576→128)": 6}
-    default_layer = 0 if repair_row["kind"] == "last" else 1
-else:
-    layer_options = {"Last layer (dense_2, 512→10)": 13}
-    default_layer = 0
-
-data_config = st.columns(3)
-layer_choice = data_config[0].selectbox(
-    "Repaired layer", list(layer_options), index=default_layer
-)
-repaired_layer_id = layer_options[layer_choice]
-
-datasets = list(model_row["datasets"])
-label_files = [d for d in datasets if "label" in d.lower()]
-input_files = [d for d in datasets if "label" not in d.lower()]
-
-if not input_files or not label_files:
+# Only offer solutions solved for the selected architecture.
+compatible = repairs[repairs["architecture"] == model_row["model"]]
+if compatible.empty:
     st.warning(
-        f"`{model_row['name']}` has no `data/` directory with both inputs and labels. "
-        "Pick another weight set."
+        f"No Z3 solutions available for the {model_row['model']} architecture. "
+        f"`{model_name}` cannot be paired with any of the bundled repairs."
     )
     st.stop()
 
-input_file = data_config[1].selectbox("Input dataset", input_files)
-label_file = data_config[2].selectbox("Labels", label_files)
+repair_label = config[1].selectbox(
+    "Repair (Z3 solutions)",
+    compatible["label"].tolist(),
+    help="Filtered to solutions solved for the selected architecture.",
+)
+repair_row = compatible[compatible["label"] == repair_label].iloc[0]
+
+# The solution directory determines which layer was repaired — an
+# intermediate-layer solution cannot be applied to the last layer. Deriving it
+# removes the mismatch rather than leaving it to the reader to avoid.
+if model_row["model"] == "mnist0":
+    repaired_layer_id = 8 if repair_row["kind"] == "last" else 6
+    layer_description = (
+        "Last layer — dense_2, 128→10" if repaired_layer_id == 8
+        else "Intermediate — dense_1, 576→128"
+    )
+else:
+    repaired_layer_id = 13
+    layer_description = "Last layer — dense_2, 512→10"
+
+data_config = st.columns(3)
+data_config[0].markdown(
+    f"**Repaired layer**  \n{layer_description}",
+    help="Determined by the solution directory, which fixes which layer was solved for.",
+)
+
+datasets = available_datasets(model_row["root"])
+if datasets.empty:
+    st.warning(
+        f"`{model_row['name']}` ships no input datasets. Only the MNIST0 "
+        "adversarial subject has them; the others provide weights alone."
+    )
+    st.stop()
+
+dataset_label = data_config[1].selectbox(
+    "Input dataset",
+    datasets["label"].tolist(),
+    help="Labels are paired automatically with each split.",
+)
+dataset_row = datasets[datasets["label"] == dataset_label].iloc[0]
+
+available_rows = count_rows(dataset_row["inputs"])
+data_config[2].markdown(
+    f"**Labels**  \n`{Path(dataset_row['labels']).name}`",
+    help="Determined by the split, so test inputs cannot be scored against validation labels.",
+)
 
 run_config = st.columns([2, 2, 3])
 sample_size = run_config[0].number_input(
-    "Inputs to evaluate", min_value=10, max_value=10_000, value=500, step=50,
-    help="Roughly 450 MNIST inputs per second.",
+    "Inputs to evaluate",
+    min_value=10,
+    max_value=int(available_rows),
+    value=int(available_rows),
+    step=500,
+    help=f"The full split is {available_rows:,} inputs, at roughly 450 per second.",
 )
 
-# Normalisation is a real trap here: the FGSM files are already in [0, 1],
-# so dividing by 255 silently reduces the network to chance.
-peek = np.fromstring(
-    open(f"{model_row['data_dir']}/{input_file}", encoding="utf-8").readline(), sep=","
-)
-looks_normalized = peek.size > 0 and peek.max() <= 1.0
+# Normalisation is a real trap: the FGSM files are already in [0, 1], and
+# dividing by 255 again silently reduces the network to chance.
+low, high = peek_range(dataset_row["inputs"])
+looks_normalized = high <= 1.0
 normalize = run_config[1].checkbox(
     "Divide inputs by 255",
     value=not looks_normalized,
-    help="Raw MNIST/CIFAR CSVs are 0–255; the FGSM files are already 0–1.",
+    help="Raw MNIST/CIFAR values are 0–255; the FGSM files are already 0–1.",
 )
 run_config[2].caption(
-    f"Detected range of the first row: **{peek.min():.3g} – {peek.max():.3g}**. "
-    + ("Already normalised, so leave the box unchecked." if looks_normalized
+    f"Observed range **{low:.3g} – {high:.3g}** over the first rows. "
+    + ("Already normalised, so leave this unchecked." if looks_normalized
        else "Looks like raw 0–255 values.")
 )
 
 if st.button("Run inference", type="primary"):
     subject = Subject(
-        name=f"{model_name}_{repair_label.replace('/', '_')}",
+        name=f"{model_name}_{repair_label.replace('/', '_')}_{dataset_row['split']}",
         model=model_row["model"],
         params_path=model_row["params"],
         repair_path=repair_row["path"],
         repaired_layer_id=repaired_layer_id,
         solution_file_name_prefix=repair_row["prefix"],
-        input_file_path=f"{model_row['data_dir']}/{input_file}",
-        label_file_path=f"{model_row['data_dir']}/{label_file}",
+        input_file_path=dataset_row["inputs"],
+        label_file_path=dataset_row["labels"],
         needs_normalization=normalize,
     )
 

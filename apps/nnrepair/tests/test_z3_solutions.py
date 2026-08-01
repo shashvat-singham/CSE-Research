@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from nnrepair.z3_solutions import (
+    SolutionShapeMismatchError,
     LayerNotRepairableError,
     LayerNotSupportedError,
     load_deltas_intermediate_layer,
@@ -152,3 +153,36 @@ class TestAgainstShippedArtifacts:
     def test_values_are_finite(self):
         path = next(Z3_SOLUTIONS.glob("*/IntermediateLayer/*/label0.txt"))
         assert all(np.isfinite(v) for v in parse_z3_model(path).values())
+
+
+class TestArchitectureMismatch:
+    """Applying one architecture's solutions to another must fail clearly.
+
+    The app previously defaulted to MNIST0 weights with CIFAR solutions, which
+    produced a bare IndexError from deep inside NumPy.
+    """
+
+    def _write_wide_solution(self, tmp_path, index: int):
+        write_model(
+            tmp_path, "solution0.txt", f"  (define-fun sym{index} () Real\n    0.5)"
+        )
+
+    def test_reports_the_mismatch_instead_of_indexerror(self, tmp_path):
+        self._write_wide_solution(tmp_path, 403)  # valid for CIFAR's 512, not MNIST's 128
+        with pytest.raises(SolutionShapeMismatchError) as caught:
+            load_repaired_weights_mnist0(tmp_path, "solution", 8, [0])
+        message = str(caught.value)
+        assert "403" in message
+        assert "128x10" in message
+        assert "different network" in message
+
+    def test_in_range_indices_still_load(self, tmp_path):
+        self._write_wide_solution(tmp_path, 100)
+        deltas = load_repaired_weights_mnist0(tmp_path, "solution", 8, [0])
+        assert deltas[0, 100, 0] == 0.5
+
+    @requires_artifacts
+    def test_real_cifar_solutions_rejected_for_mnist(self):
+        cifar = next(Z3_SOLUTIONS.glob("Cifar-*/Lastlayer/*"))
+        with pytest.raises(SolutionShapeMismatchError):
+            load_repaired_weights_mnist0(cifar, "solution", 8, range(10))

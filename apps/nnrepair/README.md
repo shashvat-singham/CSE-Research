@@ -46,20 +46,37 @@ is not used.
 
 ### What the deployment bundles
 
-Everything needed for all five pages ships in `data/`, 26 MB total:
+Every page runs on complete data. `data/` is 45 MB:
 
-| | Size | Notes |
+| | Size | Contents |
 |---|---|---|
 | `data/Results` | 1.5 MB | all 345 result CSVs |
 | `data/NNRepair/Z3Solutions` | 14 MB | all 290 solution files, all five subjects |
-| `data/NNRepair/NN-Code/mnist0-adv/params` | 1.6 MB | MNIST0 adversarial weights |
-| `data/NNRepair/NN-Code/mnist0-adv/data` | 9 MB | first 1,000 inputs of the FGSM ε=0.05 test set |
+| `.../mnist0-adv/params` | 1.6 MB | MNIST0 adversarial weights |
+| `.../mnist0-adv/{data,val-data}` | 29 MB | all ten FGSM datasets, 10,000 inputs each |
 
-What is left out is the bulk input data — five FGSM test sets and five
-validation sets at 90 MB each, plus the CIFAR weights. `app_data.py` prefers a
-full checkout when one is present and falls back to this subset otherwise,
-and the app says which it is running on rather than letting a visitor assume
-the missing subjects do not exist.
+The datasets are the interesting part. As shipped they are 941 MB of CSV text —
+ten files of 10,000 rows by 784 fixed-point decimals. That is far more bytes
+than information: each is an 8-bit image perturbed by FGSM and clipped to
+`[0, 1]`, so a few hundred distinct values cover all 7.8 million entries per
+file.
+
+`nnrepair/datasets.py` stores them as a **codebook** — a `uint16` index per
+pixel plus a `float64` table of the distinct values. That is 941 MB → 29 MB, a
+33× reduction, and **exactly lossless**: decoded values are bit-identical to
+what `numpy.loadtxt` returns from the text. `compress_dataset` refuses to write
+unless the round-trip verifies, and a full 10,000-input run reproduces the
+text-file numbers to the digit (CONF 38.15%, ORIG 29.92%).
+
+Regenerate with:
+
+```bash
+python tools/compress_datasets.py <NN-Code dir> --out <dest> --check
+```
+
+Only the CIFAR weights are omitted, because the artifact ships no CIFAR
+datasets to run them against. `app_data.py` prefers a full checkout when one is
+present, and the app states which it is using.
 
 ## The Python port
 

@@ -48,6 +48,7 @@ __all__ = [
     "load_repaired_weights_cifar10",
     "LayerNotRepairableError",
     "LayerNotSupportedError",
+    "SolutionShapeMismatchError",
 ]
 
 _TOKEN_RE = re.compile(r"\(|\)|[^\s()]+")
@@ -61,6 +62,40 @@ class LayerNotSupportedError(NotImplementedError):
 
 class LayerNotRepairableError(ValueError):
     """A layer that holds no weights, so it cannot carry a repair delta."""
+
+
+class SolutionShapeMismatchError(ValueError):
+    """Solver output does not fit the layer it is being applied to.
+
+    Almost always means solutions from one architecture are being applied to
+    another — CIFAR's final layer is 512 wide against MNIST0's 128, so a CIFAR
+    solution indexes far past the end of an MNIST0 tensor.
+    """
+
+
+def _place(
+    weight_delta: np.ndarray,
+    slot: int,
+    row: int,
+    column: int,
+    value: float,
+    *,
+    source: Path,
+) -> None:
+    """Write one delta, reporting an out-of-range index in useful terms.
+
+    Raises:
+        SolutionShapeMismatchError: If the index falls outside the tensor.
+    """
+    _, rows, columns = weight_delta.shape
+    if not (0 <= row < rows and 0 <= column < columns):
+        raise SolutionShapeMismatchError(
+            f"{source.name} references weight [{row}, {column}], but the layer "
+            f"being repaired is {rows}x{columns}. These solutions were solved "
+            f"for a different network — check that the solution directory "
+            f"({source.parent}) matches the weights and layer you selected."
+        )
+    weight_delta[slot, row, column] = value
 
 
 @dataclass(frozen=True)
@@ -290,24 +325,31 @@ def load_repaired_weights_mnist0(
             "was left unimplemented in the original artifact)."
         )
 
+    directory = Path(path)
+
     if repaired_layer_id == 6:
         weight_delta = np.zeros((number_of_experts + 2, 576, 128), dtype=np.float64)
         for expert_id in expert_ids:
+            source = directory / f"label{expert_id}.txt"
             for delta in load_deltas_intermediate_layer(path, expert_id, number_of_experts):
-                weight_delta[expert_id, delta.in_index, delta.out_index] = delta.value
-        if include_full_repair and (Path(path) / "full.txt").exists():
+                _place(weight_delta, expert_id, delta.in_index, delta.out_index,
+                       delta.value, source=source)
+        if include_full_repair and (directory / "full.txt").exists():
             for delta in load_deltas_intermediate_layer(path, number_of_experts, number_of_experts):
-                weight_delta[number_of_experts, delta.in_index, delta.out_index] = delta.value
+                _place(weight_delta, number_of_experts, delta.in_index, delta.out_index,
+                       delta.value, source=directory / "full.txt")
         return _finalize(weight_delta, expert_ids, number_of_experts)
 
     if repaired_layer_id == 8:
         weight_delta = np.zeros((number_of_experts + 2, 128, 10), dtype=np.float64)
         for expert_id in expert_ids:
+            source = directory / f"{solution_file_name_prefix}{expert_id}.txt"
             for delta in load_deltas_last_layer(
                 path, solution_file_name_prefix, expert_id, number_of_experts
             ):
                 # One model per label, so the delta lands in that label's column.
-                weight_delta[expert_id, delta.in_index, expert_id] = delta.value
+                _place(weight_delta, expert_id, delta.in_index, expert_id,
+                       delta.value, source=source)
         return _finalize(weight_delta, expert_ids, number_of_experts)
 
     raise LayerNotRepairableError(f"Layer {repaired_layer_id} cannot be repaired!")
@@ -340,12 +382,15 @@ def load_repaired_weights_cifar10(
         )
 
     if repaired_layer_id == 13:
+        directory = Path(path)
         weight_delta = np.zeros((number_of_experts + 2, 512, 10), dtype=np.float64)
         for expert_id in expert_ids:
+            source = directory / f"{solution_file_name_prefix}{expert_id}.txt"
             for delta in load_deltas_last_layer(
                 path, solution_file_name_prefix, expert_id, number_of_experts
             ):
-                weight_delta[expert_id, delta.in_index, expert_id] = delta.value
+                _place(weight_delta, expert_id, delta.in_index, expert_id,
+                       delta.value, source=source)
         return _finalize(weight_delta, expert_ids, number_of_experts)
 
     raise LayerNotRepairableError(f"Layer {repaired_layer_id} cannot be repaired!")

@@ -7,15 +7,17 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+import styles
+
 from app_data import Z3_ROOT, bundled_subset_note, have_z3_solutions, missing_artifact_note
 from nnrepair.z3_solutions import parse_z3_model
 from theme import INK, SERIES, bar_with_labels
 
 
-st.title("Solver Output")
-st.caption(
-    "Each repair is a satisfying assignment from Z3. This page decodes those "
-    "models into the weight deltas they represent."
+styles.page_header(
+    'Solver output',
+    'Each repair is a satisfying assignment from Z3. This page decodes those models into the weight deltas they represent.',
+    eyebrow='Artifacts',
 )
 
 if not have_z3_solutions():

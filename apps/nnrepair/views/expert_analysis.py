@@ -6,16 +6,18 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+import styles
+
 from app_data import RESULTS_ROOT, results_index
 from nnrepair.f1_selection import read_prec_f1, select_experts_by_harmonic_f1
 from nnrepair.results import discover_results
 from theme import INK, SERIES, bar_with_labels
 
 
-st.title("Expert Analysis")
-st.caption(
-    "A repair produces one expert per label. Not all of them are improvements — "
-    "this page shows which experts earn their place."
+styles.page_header(
+    'Experts',
+    'A repair produces one expert per label. Not all of them are improvements — this page shows which experts earn their place.',
+    eyebrow='Analysis',
 )
 
 index = results_index()

@@ -157,14 +157,15 @@ def using_bundled_subset() -> bool:
 
 
 def bundled_subset_note() -> None:
-    """State what the shipped subset contains, when running on it."""
+    """State what the shipped artifacts contain, when running on them."""
     if not using_bundled_subset():
         return
     st.caption(
-        "Running on the artifact subset bundled with this deployment: all 290 "
-        "Z3 solutions, the MNIST0 adversarial weights, and the first 1,000 "
-        "inputs of the FGSM ε=0.05 test set. The remaining ~940 MB of datasets "
-        "and the CIFAR weights are not hosted — clone the repository for those."
+        "Running on the artifacts bundled with this deployment: all 290 Z3 "
+        "solutions, the MNIST0 adversarial weights, and all ten FGSM datasets "
+        "in full — 10,000 inputs each, losslessly compressed from 941 MB to "
+        "29 MB. Not included are the CIFAR weights, which have no datasets in "
+        "the artifact to run against."
     )
 
 
