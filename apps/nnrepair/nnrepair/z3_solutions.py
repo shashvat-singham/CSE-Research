@@ -29,8 +29,6 @@ before the single narrowing conversion to float, so the hundred-digit integers
 Z3 emits do not lose precision the way ``a/b`` on two pre-rounded floats does.
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass

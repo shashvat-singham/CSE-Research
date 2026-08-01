@@ -10,8 +10,6 @@ ordinary arguments instead, and :func:`subjects_from_artifact` derives the
 configurations from the repository layout.
 """
 
-from __future__ import annotations
-
 import csv
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field

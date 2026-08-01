@@ -19,8 +19,6 @@ True negative           everything else
 the expert was actually repaired for, and the number the paper reports.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 

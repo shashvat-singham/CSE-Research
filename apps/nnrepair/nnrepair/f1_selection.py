@@ -20,8 +20,6 @@ The Java ``main`` hardcoded one subject and an absolute path on the author's
 machine. Here the paths are arguments.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 from collections.abc import Sequence

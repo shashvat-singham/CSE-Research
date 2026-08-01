@@ -13,8 +13,6 @@ large (up to 17 MB) and excluded from the deployed apps; see
 ``NN-Code/README.md``.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path

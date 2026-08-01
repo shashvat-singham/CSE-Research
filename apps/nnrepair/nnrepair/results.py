@@ -17,8 +17,6 @@ Two file kinds share the tree:
   :func:`~nnrepair.f1_selection.read_prec_f1`.
 """
 
-from __future__ import annotations
-
 import re
 from dataclasses import asdict, dataclass
 from functools import lru_cache
