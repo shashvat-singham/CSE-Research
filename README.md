@@ -3,10 +3,14 @@
 Two research artifacts from the compilers and program-analysis group at IIT
 Kanpur, each with a deployed application built on top of it.
 
-| | What it is | App | Host |
+| | What it is | Live | Stack |
 |---|---|---|---|
-| **[Cyclops](apps/cyclops)** | LL(1) grammar analysis and parse-table workbench | Next.js | Vercel |
-| **[NNRepair](apps/nnrepair)** | Constraint-based repair of NN classifiers | Streamlit | Streamlit Community Cloud |
+| **[Cyclops](apps/cyclops)** | LL(1) grammar analysis and parse-table workbench | **https://cyclops-delta.vercel.app** | Next.js on Vercel |
+| **[NNRepair](apps/nnrepair)** | Constraint-based repair of NN classifiers | _pending_ | Streamlit Community Cloud |
+
+NNRepair deploys from **[shashvat-singham/nnrepair-app](https://github.com/shashvat-singham/nnrepair-app)**,
+a split-out copy of `apps/nnrepair`, so the build does not clone the 954 MB of
+research data this repository carries.
 
 ## Layout
 

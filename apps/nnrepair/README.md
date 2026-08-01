@@ -3,7 +3,13 @@
 An interactive companion to the NNRepair artifact, plus a Python port of its
 Java implementation.
 
-Deployed on Streamlit Community Cloud.
+Deploys to Streamlit Community Cloud from
+[shashvat-singham/nnrepair-app](https://github.com/shashvat-singham/nnrepair-app),
+a split-out copy of this directory that avoids cloning the 954 MB of research
+data in the parent repository.
+
+**Live: _pending first deploy_** — at share.streamlit.io, point a new app at
+that repo, branch `main`, main file `streamlit_app.py`.
 
 ## Running it
 
