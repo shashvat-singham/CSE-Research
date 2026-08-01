@@ -21,6 +21,20 @@ APP_ROOT = Path(__file__).resolve().parent
 RESULTS_ROOT = APP_ROOT / "data" / "Results"
 
 
+def _looks_like_artifact_tree(path: Path) -> bool:
+    """Whether ``path`` is really the artifact tree and not a lookalike.
+
+    Checking the directory name alone is not enough. On a case-insensitive
+    filesystem — Windows, and macOS by default — a candidate named
+    ``NNRepair`` also matches this app's own lowercase ``nnrepair`` Python
+    package, so the search would happily "find" the source tree. Requiring one
+    of the artifact's actual subdirectories rules that out.
+    """
+    return path.is_dir() and any(
+        (path / marker).is_dir() for marker in ("Z3Solutions", "NN-Code", "Constraints", "Results")
+    )
+
+
 def _locate_artifact_root() -> Path:
     """Find the optional ``NNRepair`` artifact tree.
 
@@ -34,22 +48,23 @@ def _locate_artifact_root() -> Path:
       are simply absent.
 
     Returns:
-        The first candidate that exists, or the monorepo path as a
-        non-existent default so callers still get a sensible name to report.
+        The first candidate that holds a recognisable artifact tree, or the
+        monorepo path as a non-existent default so callers still have a
+        sensible path to name when reporting the absence.
     """
     override = os.environ.get("NNREPAIR_ARTIFACT_ROOT")
     if override:
         return Path(override)
 
-    candidates = [
-        APP_ROOT.parents[1] / "NNRepair" if len(APP_ROOT.parents) > 1 else None,
-        APP_ROOT / "NNRepair",
-    ]
-    for candidate in candidates:
-        if candidate is not None and candidate.is_dir():
+    default = (
+        APP_ROOT.parents[1] / "NNRepair" if len(APP_ROOT.parents) > 1 else APP_ROOT / "NNRepair"
+    )
+
+    for candidate in (default, APP_ROOT / "NNRepair"):
+        if _looks_like_artifact_tree(candidate):
             return candidate
 
-    return APP_ROOT.parents[1] / "NNRepair" if len(APP_ROOT.parents) > 1 else APP_ROOT / "NNRepair"
+    return default
 
 
 #: Optional artifacts, present only in a full checkout or a Docker mount.

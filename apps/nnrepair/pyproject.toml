@@ -17,7 +17,8 @@ dependencies = [
 [project.optional-dependencies]
 app = [
     "streamlit>=1.36",
-    "altair>=5.3",
+    # See requirements.txt: Altair below 6.2.2 fails to import on Python 3.14.
+    "altair>=6.2.2",
 ]
 dev = [
     "pytest>=8.0",

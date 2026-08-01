@@ -1,4 +1,17 @@
 streamlit>=1.36,<2
-altair>=5.3,<6
+
+# Altair 6.2.2 or newer is required on Python 3.14.
+#
+# Altair 5.5 guards its PEP 728 TypedDicts with `sys.version_info >= (3, 14)`,
+# betting that `closed=True` and `__extra_items__` would reach the stdlib
+# `typing` module in 3.14. They did not — PEP 728 slipped — so on 3.14 that
+# branch imports a `TypedDict` that rejects `closed=True` and the whole import
+# raises TypeError. Altair 6 moved the guard to `>= (3, 15)`, which falls back
+# to `typing_extensions` and works.
+#
+# This surfaced as a hard crash on Streamlit Community Cloud, which builds on
+# Python 3.14. Do not cap this below 6 again without checking the runtime.
+altair>=6.2.2,<7
+
 numpy>=1.26,<3
 pandas>=2.1,<3
