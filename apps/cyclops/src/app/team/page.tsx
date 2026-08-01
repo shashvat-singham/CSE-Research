@@ -5,18 +5,34 @@ export const metadata: Metadata = {
   description: "The people behind Cyclops.",
 };
 
+/**
+ * Roles are only stated where they are known. Guessing an academic title is
+ * worse than omitting it, so the remaining entries carry a name and a link.
+ */
 const TEAM = [
   {
+    name: "Subhajit Roy",
+    role: "Professor, CSE, IIT Kanpur",
+    href: "https://www.cse.iitk.ac.in/users/subhajit/",
+    linkLabel: "Homepage",
+  },
+  {
     name: "Pankaj Kalita",
+    role: "",
     href: "https://www.cse.iitk.ac.in/users/pkalita/",
+    linkLabel: "Homepage",
   },
   {
     name: "Sumit Lahiri",
+    role: "",
     href: "https://www.cse.iitk.ac.in/users/sumitl/",
+    linkLabel: "Homepage",
   },
   {
-    name: "Subhajit Roy",
-    href: "https://www.cse.iitk.ac.in/users/subhajit/",
+    name: "Shashvat Singham",
+    role: "",
+    href: "https://shashvat-singham.netlify.app/",
+    linkLabel: "Portfolio",
   },
 ];
 
@@ -31,17 +47,20 @@ export default function TeamPage() {
         </p>
       </header>
 
-      <ul className="grid gap-4 sm:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {TEAM.map((person) => (
-          <li key={person.name} className="card p-5">
+          <li key={person.name} className="card flex flex-col p-5">
             <p className="font-medium">{person.name}</p>
+            {person.role && (
+              <p className="mt-0.5 text-sm text-ink-secondary">{person.role}</p>
+            )}
             <a
               href={person.href}
               target="_blank"
               rel="noreferrer noopener"
-              className="mt-1 inline-block text-sm text-accent underline underline-offset-2"
+              className="mt-auto pt-2 text-sm text-accent underline underline-offset-2"
             >
-              Homepage
+              {person.linkLabel}
             </a>
           </li>
         ))}
