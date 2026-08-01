@@ -1,18 +1,75 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+# ---------------------------------------------------------------------------
+# Dependencies
+# ---------------------------------------------------------------------------
+node_modules/
+.pnp
+.pnp.js
+.yarn/
 
-# Other files and folders
-.settings/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+# ---------------------------------------------------------------------------
+# Builds
+# ---------------------------------------------------------------------------
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+# ---------------------------------------------------------------------------
+# Deploy tooling
+# ---------------------------------------------------------------------------
+.vercel/
+.streamlit/secrets.toml
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env*.local
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Large research artifacts — not deployable, kept out of app bundles.
+# The MNIST/CIFAR datasets and extracted weight dumps under NNRepair/NN-Code
+# total ~954 MB (ten files are 94 MB each). They are experiment inputs, not
+# something any host serves. See NNRepair/NN-Code/README.md for how to fetch.
+# ---------------------------------------------------------------------------
+NNRepair/NN-Code/**/data/
+NNRepair/NN-Code/**/val-data/
+NNRepair/NN-Code/**/params/
+*.h5
+*.hdf5
+
+# ---------------------------------------------------------------------------
+# Legacy PHP tooling (superseded by apps/cyclops)
+# ---------------------------------------------------------------------------
+composer.phar
+vendor/
+
+# ---------------------------------------------------------------------------
+# Editor / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Local agent config
+.claude/
