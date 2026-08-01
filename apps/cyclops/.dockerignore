@@ -1,0 +1,29 @@
+# Reinstalled inside the image from the lockfile.
+node_modules
+
+# Build output — the image builds its own.
+.next
+out
+dist
+
+# Never copy secrets into a build context.
+.env
+.env.local
+.env*.local
+
+# Not needed at build time.
+.git
+.gitignore
+.vercel
+.claude
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,30 @@
+# Python build artefacts.
+__pycache__
+**/__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.venv
+venv
+env
+
+# Never copy secrets into a build context.
+.env
+.env.local
+.env*.local
+.streamlit/secrets.toml
+
+# Not needed at build time.
+.git
+.gitignore
+.claude
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+tests
+.DS_Store
+Thumbs.db
+*.log

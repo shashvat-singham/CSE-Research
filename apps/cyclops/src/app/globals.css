@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Tokens follow the validated data-viz palette. Dark values are *selected*
+ * steps for the dark surface, not an automatic inversion, and are declared
+ * under both the OS media query and the explicit theme class so the toggle
+ * wins in either direction.
+ */
+:root {
+  --surface-0: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --surface-2: #ffffff;
+
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+
+  --border: #e1e0d9;
+  --border-strong: #c3c2b7;
+
+  --accent: #2a78d6;
+  --accent-soft: #eaf2fd;
+  --accent-ink: #184f95;
+
+  --good: #0ca30c;
+  --warn: #fab219;
+  --bad: #d03b3b;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --surface-0: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+
+    --border: #2c2c2a;
+    --border-strong: #383835;
+
+    --accent: #3987e5;
+    --accent-soft: #14243a;
+    --accent-ink: #9ec5f4;
+
+    --good: #0ca30c;
+    --warn: #fab219;
+    --bad: #e66767;
+
+    color-scheme: dark;
+  }
+}
+
+:root.dark {
+  --surface-0: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+
+  --border: #2c2c2a;
+  --border-strong: #383835;
+
+  --accent: #3987e5;
+  --accent-soft: #14243a;
+  --accent-ink: #9ec5f4;
+
+  --good: #0ca30c;
+  --warn: #fab219;
+  --bad: #e66767;
+
+  color-scheme: dark;
+}
+
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard focus must stay visible on every interactive element. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-line bg-surface;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2
+           text-sm font-medium transition-colors disabled:cursor-not-allowed
+           disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-white hover:brightness-110;
+  }
+
+  .btn-secondary {
+    @apply btn border border-line-strong text-ink hover:bg-surface-raised;
+  }
+
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm
+           text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none;
+  }
+
+  /* Wide tables must scroll inside their own box, never the page body. */
+  .table-scroll {
+    @apply -mx-1 overflow-x-auto px-1;
+  }
+}
